@@ -26,16 +26,18 @@ Bounce btn[7];
 // ==============================
 
 // Estado do ar-condicionado (AR)
-struct AirState {
+struct AirState
+{
   int temperatura = 24;      // faixa: 18 a 30
-  int velocidade  = 1;       // faixa: 1 a 3
-  int unidade     = 1;       // valores: 1,2,3,4 e 0 para 'Todos'
+  int velocidade = 1;        // faixa: 1 a 3
+  int unidade = 1;           // valores: 1,2,3,4 e 0 para 'Todos'
   bool controlarTemp = true; // true: controla temperatura; false: controla velocidade
 };
 
 // Estado do projetor (PJ)
-struct ProjState {
-  int unidade = 1;           // valores: 1,2 e 0 para 'Todos'
+struct ProjState
+{
+  int unidade = 1; // valores: 1,2 e 0 para 'Todos'
   bool congelado = false;
 };
 
@@ -54,7 +56,8 @@ unsigned long tempoTrava = 0;
 // FUNÇÃO DE ATUALIZAÇÃO DO LCD
 // ==============================
 
-void atualizarLCD() {
+void atualizarLCD()
+{
   // Linha 1 - Cabeçalho
   char arHeader[9];
   char pjHeader[9];
@@ -63,14 +66,18 @@ void atualizarLCD() {
   // AR Header (colunas 0-7): mostra "AR:" + unidade; a seta que indica seleção do dispositivo
   char seta_ar = (selectedDevice == 0) ? '>' : ' ';
   char unidadeAr[3];
-  if (air.unidade == 0) {
+  if (air.unidade == 0)
+  {
     strcpy(unidadeAr, "TD");
-  } else {
+  }
+  else
+  {
     sprintf(unidadeAr, "%d", air.unidade);
   }
   sprintf(arHeader, "%cAR:%s", seta_ar, unidadeAr);
   int len = strlen(arHeader);
-  for (int i = len; i < 8; i++) {
+  for (int i = len; i < 8; i++)
+  {
     arHeader[i] = ' ';
   }
   arHeader[8] = '\0';
@@ -78,14 +85,18 @@ void atualizarLCD() {
   // PJ Header (colunas 8-15): mostra "PJ:" + unidade; seta se selecionado
   char seta_pj = (selectedDevice == 1) ? '>' : ' ';
   char unidadePj[3];
-  if (proj.unidade == 0) {
+  if (proj.unidade == 0)
+  {
     strcpy(unidadePj, "TD");
-  } else {
+  }
+  else
+  {
     sprintf(unidadePj, "%d", proj.unidade);
   }
   sprintf(pjHeader, "%cPJ:%s", seta_pj, unidadePj);
   len = strlen(pjHeader);
-  for (int i = len; i < 8; i++) {
+  for (int i = len; i < 8; i++)
+  {
     pjHeader[i] = ' ';
   }
   pjHeader[8] = '\0';
@@ -99,7 +110,8 @@ void atualizarLCD() {
   char bullet = (selectedDevice == 0 && air.controlarTemp) ? 'o' : ' ';
   sprintf(rowTemp, "%cT:%02d", bullet, air.temperatura);
   len = strlen(rowTemp);
-  for (int i = len; i < 16; i++) {
+  for (int i = len; i < 16; i++)
+  {
     rowTemp[i] = ' ';
   }
   rowTemp[16] = '\0';
@@ -110,7 +122,8 @@ void atualizarLCD() {
   bullet = (selectedDevice == 0 && !air.controlarTemp) ? 'o' : ' ';
   sprintf(rowVel, "%cV:%d", bullet, air.velocidade);
   len = strlen(rowVel);
-  for (int i = len; i < 16; i++) {
+  for (int i = len; i < 16; i++)
+  {
     rowVel[i] = ' ';
   }
   rowVel[16] = '\0';
@@ -119,13 +132,17 @@ void atualizarLCD() {
   char rowFreeze[17];
   // Preenche a metade esquerda com espaços
   char freezeStatus[9];
-  if (proj.congelado) {
+  if (proj.congelado)
+  {
     strcpy(freezeStatus, "FRZ");
-  } else {
+  }
+  else
+  {
     strcpy(freezeStatus, "----");
   }
   len = strlen(freezeStatus);
-  for (int i = len; i < 8; i++) {
+  for (int i = len; i < 8; i++)
+  {
     freezeStatus[i] = ' ';
   }
   freezeStatus[8] = '\0';
@@ -146,14 +163,16 @@ void atualizarLCD() {
 // SETUP
 // ==============================
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   irsend.begin();
   lcd.init();
   lcd.backlight();
   atualizarLCD();
-  
-  for (int i = 0; i < 7; i++) {
+
+  for (int i = 0; i < 7; i++)
+  {
     pinMode(botoes[i], INPUT_PULLUP);
     btn[i].attach(botoes[i]);
     btn[i].interval(25);
@@ -164,89 +183,119 @@ void setup() {
 // PROCESSAMENTO DOS BOTÕES
 // ==============================
 
-void processarBotoes() {
+void processarBotoes()
+{
   bool atualizou = false;
   unsigned long agora = millis();
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 7; i++)
+  {
     btn[i].update();
   }
 
   // Botão 6: Travamento (pressione por 5 segundos para alternar o lock)
-  if (btn[6].read() == LOW) {
-    if (!aguardandoTrava) {
+  if (btn[6].read() == LOW)
+  {
+    if (!aguardandoTrava)
+    {
       tempoTrava = agora;
       aguardandoTrava = true;
-    } else if (agora - tempoTrava >= 5000) {
+    }
+    else if (agora - tempoTrava >= 5000)
+    {
       travado = !travado;
       aguardandoTrava = false;
       atualizarLCD();
       return;
     }
-  } else {
+  }
+  else
+  {
     aguardandoTrava = false;
   }
 
-  if (travado) {
+  if (travado)
+  {
     return;
   }
 
   // Botão 0: Alterna o dispositivo selecionado
-  if (btn[0].fell()) {
+  if (btn[0].fell())
+  {
     selectedDevice = (selectedDevice == 0) ? 1 : 0;
     atualizarLCD();
     return;
   }
 
-  if (selectedDevice == 0) {
+  if (selectedDevice == 0)
+  {
     // Para AR
-    if (btn[1].fell()) {
+    if (btn[1].fell())
+    {
       air.controlarTemp = !air.controlarTemp;
       atualizou = true;
     }
-    if (btn[2].fell()) {
-      if (air.controlarTemp) {
-        if (air.temperatura < 30) {
+    if (btn[2].fell())
+    {
+      if (air.controlarTemp)
+      {
+        if (air.temperatura < 30)
+        {
           air.temperatura++;
         }
-      } else {
-        if (air.velocidade < 3) {
+      }
+      else
+      {
+        if (air.velocidade < 3)
+        {
           air.velocidade++;
         }
       }
       atualizou = true;
     }
-    if (btn[3].fell()) {
-      if (air.controlarTemp) {
-        if (air.temperatura > 18) {
+    if (btn[3].fell())
+    {
+      if (air.controlarTemp)
+      {
+        if (air.temperatura > 18)
+        {
           air.temperatura--;
         }
-      } else {
-        if (air.velocidade > 1) {
+      }
+      else
+      {
+        if (air.velocidade > 1)
+        {
           air.velocidade--;
         }
       }
       atualizou = true;
     }
-    if (btn[4].fell()) {
+    if (btn[4].fell())
+    {
       air.unidade = (air.unidade + 1) % 5;
       atualizou = true;
     }
     // Botão 5: sem função para AR
-  } else {
+  }
+  else
+  {
     // Para Projetor
-    if (btn[4].fell()) {
+    if (btn[4].fell())
+    {
       proj.unidade = (proj.unidade + 1) % 3;
       atualizou = true;
     }
-    if (btn[5].fell()) {
+    if (btn[5].fell())
+    {
       proj.congelado = !proj.congelado;
       atualizou = true;
     }
     // Botões 1, 2 e 3 sem função para Projetor
   }
 
-  if (atualizou) {
+  if (atualizou)
+  {
     atualizarLCD();
   }
 }
@@ -255,6 +304,7 @@ void processarBotoes() {
 // LOOP
 // ==============================
 
-void loop() {
+void loop()
+{
   processarBotoes();
 }

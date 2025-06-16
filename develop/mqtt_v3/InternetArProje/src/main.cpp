@@ -3,7 +3,6 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include "internet.h"
-#include "ir_control.h"
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -24,6 +23,7 @@ const int botoes[] = {12, 13, 14, 15, 5, 19, 23};
 
 void callBack(char *, byte *, unsigned int);
 void mqttConnect(void);
+void tratarMensagemIR(JsonDocument &doc);
 
 int tempoEspera = 0;
 
@@ -36,9 +36,7 @@ unsigned long msgRecebida;
 
 void setup()
 {
-  Serial.begin(9600);
-
-  inicializarIR();
+  Serial.begin(115200);
 
   conectaWiFi();
 
