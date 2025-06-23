@@ -74,14 +74,14 @@ void mqttCallback(char *topic, byte *payLoad, unsigned int length)
     mensagem = doc["mensagem"].as<String>();
     mensagemAtiva = true;
   }
-
-  //Serial.printf("MQTT recebido -> Reunião: %d, Mensagem: %s\n", reuniaoAtiva, mensagemAtiva);
 }
 
 void enviarMensagemLida()
 {
   JsonDocument resp;
+  resp["id"] = (mqtt_id);
   resp["resposta"] = "mensagem lida";
+
   char buffer[64];
   serializeJson(resp, buffer);
   client.publish(mqtt_topic_pub, buffer);
@@ -124,13 +124,12 @@ void loop()
       digitalWrite(pinLed, estadoLed);
       tempoAnterior = millis();
     }
-    
-    if (reuniaoAtiva && reuniaoAnterior==0)
+
+    if (reuniaoAtiva && reuniaoAnterior == 0)
     {
-       Serial.println("Reunião!");
-       reuniaoAnterior = reuniaoAtiva;
+      Serial.println("Reunião!");
+      reuniaoAnterior = reuniaoAtiva;
     }
-    
   }
   // === Mensagem ativa: LED aceso constante ===
   else if (mensagemAtiva)
@@ -146,9 +145,9 @@ void loop()
   // === Botão pressionado ===
   if (botao.fell())
   {
-      digitalWrite(pinLed, LOW);
-      enviarMensagemLida();
-      reuniaoAtiva = false;
-      mensagemAtiva = false;
+    digitalWrite(pinLed, LOW);
+    enviarMensagemLida();
+    reuniaoAtiva = false;
+    mensagemAtiva = false;
   }
 }
